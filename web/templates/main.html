@@ -1,0 +1,104 @@
+{% extends "main_template.html" %}
+
+{% block content %}
+
+
+<style type="text/css">
+<!--
+div.scroll {
+height: 250px;
+width: 980px;
+overflow: auto;
+border: 1px solid #666;
+padding: 8px;
+margin: 0px 0px 10px 12px;
+text-align: left;
+}
+
+
+.queryresults { border-collapse: collapse;  }
+.queryresults td, .queryresults th { padding: 0.2em 0.4em; vertical-align: top; }
+.unbound { color: #888; }
+.queryresults a small { font-size: 100%; color: #55a; }
+.queryresults small { font-size: 100%; color: #666; }
+.queryresults .property { white-space: nowrap; }
+.queryresults th { background: #234979; color: #FFFFE0; }
+.queryresults .odd td { background: #FFFAFA; }
+.queryresults .even td { background: #F5F5DC; }
+
+.CodeMirror {font-size: 1.1em; border-top: 1px solid black; border-bottom: 1px solid black; text-align: left; background: white; height: 165px}
+.CodeMirror-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+  width: 100%;
+}
+
+-->
+</style> 
+
+<script type="text/javascript">
+$(document).ready(function(){
+    snorql.start();
+});
+</script>
+<div>
+<table width="70%" border="0">
+<tr valign="top">
+<td width="50%">
+    <div class="section" style="background: #E2EBF0;border: 1px solid #C1DAD7; align: left">
+      <form id="queryform" action="#" method="get">
+        <input type="hidden" name="query" value="" id="query" />
+        <input type="hidden" name="output" value="json" id="jsonoutput" disabled="disabled" />
+        <input type="hidden" name="stylesheet" value="" id="stylesheet" disabled="disabled" />
+        <input type="hidden" name="graph" value="" id="graph-uri" disabled="disabled" />
+        {% csrf_token %}
+      </form>
+      <div>
+      <div style="width: 450px; margin: 0px 0px 0px 0px">
+        <textarea id="querytext" name="query" rows="6">
+PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
+
+SELECT ?ont ?name ?acr
+WHERE { 
+	?ont a omv:Ontology .
+	?ont omv:acronym ?acr .
+	?ont omv:name ?name . 
+}
+        </textarea>
+      </div>
+      <div style="margin: 15px 0px 0px 0px">
+        Results:
+        <select id="selectoutput" onchange="snorql.updateOutputMode()">
+          <option selected="selected" value="browse">Browse</option>
+          <option value="json">as JSON</option>
+          <option value="xml">as XML</option>
+        </select>
+        <input id="query" type="button" value="run query" onclick="snorql.submitQuery()" />
+        <input id="reset" type="button" value="reset" onclick="snorql.resetQuery()" />
+      </div>
+      </div>
+    </div>
+</td>
+<td width="*">
+<div align="left" style="margin: 0px 0px 0px 20px;">
+<div style="height: 130px"> 
+<br/>
+<div style="background: #234979; color: white;padding: 15px;">
+<center>
+<span style="font-size: 1.10em;">
+<b><a href="http://www.bioontology.org/wiki/index.php/SPARQL_BioPortal" style="font-size:1.25em; color:white;">Documentation</a></b></span>
+</center>
+</div>
+<div style="background: #E2EBF0;border: 1px solid #C1DAD7;margin-top: 40px;padding: 15px;">
+<center>
+<b><a style="font-size: 1.25em;" href="/examples">SPARQL Examples</a></b>
+</center>
+</div>
+</div>
+<div>
+</div>
+</td>
+</tr></table>
+<div id="result" class="scroll"><span>run a query to see results here</span></div>
+{% endblock %}

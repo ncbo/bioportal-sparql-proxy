@@ -1,0 +1,62 @@
+{% extends "main_template.html" %}
+
+{% block content %}
+
+
+<style type="text/css">
+ul.niceList { 
+  margin-left:0em; 
+  padding-left:0.2em; 
+  margin-bottom:1.5em; 
+}
+ul.niceList li { 
+  background:url(/static/images/bullet.gif) 0em 0.5em no-repeat; /* change background em accordingly */
+  padding-left: 0.9em; 
+  list-style: none; 
+}
+.niceList ul li { background-image:url(/static/images/bullet_child.gif);  padding-left: 0.9em; margin-left: 30px; }
+ 
+ol.niceList li, ul.niceList li { margin-bottom:0.5em; }
+ 
+ol.niceList { 
+  margin-left:1.5em; 
+  padding-left:0px; 
+}
+.niceList ol li { 
+  list-style:decimal; 
+  background-image:none; 
+  padding-left:0em; 
+}
+
+.zz {
+margin-top: 10px;
+background: #FFEFC6; 
+padding: 10px;
+color: #07C;
+border: 1px solid #FFD700;
+padding: 10px;
+margin-bottom: 20px;
+
+}
+
+</style>
+
+<h1>How to get/use your BioPortal API Key ?</h1>
+<br/>
+<div style="text-align:left; width: 700px; font-size: 1.15em">
+<ul class="niceList">
+    <li>If you do not have a BioPortal account go to <a href="http://bioportal.bioontology.org/accounts/new" target="_blank">New Account&nbsp;<img src="/static/images/link.png"></a>&nbsp;and create one.</li>
+    <li>Once you have the BioPortal account, login in BioPortal and go to your <a href="http://bioportal.bioontology.org/account" target="_blank">account details&nbsp;<img src="/static/images/link.png"></a>&nbsp;and you should see your API Key there. The following image shows an screenshot of a BioPortal account with the API Key at the bottom.
+    <br/>
+    <br/>
+    <center>
+    <img src="/static/images/apikey_account.png" width="300px" />
+    </center>
+    </li>
+    <li>You need to use your BioPortal API Key in your scripts. Example code that shows how to use the API Key with your SPARQL queries is avalaible here: <a href="/code">Submitting SPARQL queries programmatically</a>.
+    </li>
+</ul>
+</div>
+{% endblock %}
+
+

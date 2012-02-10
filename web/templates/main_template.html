@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>BioPortal SPARQL Query Browser</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css" />
+    <link href="http://bioportal.bioontology.org/stylesheets/layout/bioportal.css" media="screen" rel="stylesheet" type="text/css" />
+
+
+    <!-- code mirror -->
+    <link rel="stylesheet" href="/static/codemirror/codemirror.css">
+    <script src="/static/codemirror/codemirror.js"></script>
+    <link rel="stylesheet" href="/static/codemirror/theme/default.css">
+    <script src="/static/codemirror/mode/sparql/sparql.js"></script>
+
+    <!-- snorql -->
+	<script src="http://jqueryjs.googlecode.com/files/jquery-1.2.6.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/static/javascript/sparql.js"></script>
+    <script type="text/javascript" src="/static/javascript/namespaces.js"></script>
+    <script type="text/javascript" src="/static/javascript/snorql.js"></script>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26364678-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+<style type="text/css">
+.zz {
+margin-top: 10px;
+background: #FFEFC6; 
+padding: 10px;
+color: #07C;
+border: 1px solid #FFD700;
+padding: 10px;
+margin-bottom: 20px;
+
+}
+
+</style>
+  </head>
+   <body>
+   <div id="header" style="background: url('http://bioportal.bioontology.org/images/layout/header_bg.png') repeat-x">
+     <ul style="list-style-type: none;height: 50px;margin: auto;">
+     <li style="padding-right: 60px; float: left;">
+     <a href="/"><img src="http://bioportal.bioontology.org/images/layout/nav_logo.png" border="0"/></a></li>
+     <li style="float: left;">
+     <h1 id="title" style="padding: 0.5em; color: white;font: 17px/1.531 arial,helvetica,clean,sans-serif"></h1></li>
+     </ul>
+     </tr></table>
+    </div>
+    <center>
+    <!--
+    <div class="zz" style="width:500px; font-size: 1.3em;visibility: hidden;height:0px">
+    Our SPARQL Service is down for maintenance!<br/>It will be up and running at 5pm (PST) 10/20/2011
+    </div>-->
+   {% block content %}{% endblock %}
+   </center>
+   <div style="padding: 2em; text-align: center; background: none repeat scroll 0% 0% rgb(35, 73, 121); color: white; clear: both;" id="footer_wrapper">
+    The National Center for Biomedical Ontology is one of the <a href="http://www.ncbcs.org/">National Centers for Biomedical Computing</a> supported by the <a href="http://www.genome.gov/">NHGRI</a>, the <a href="http://www.nhlbi.nih.gov/">NHLBI</a>, and the <a href="https://commonfund.nih.gov/">NIH Common Fund</a> under grant U54-HG004028.<br>
+        Copyright © 2005–2011, The Board of Trustees of Leland Stanford Junior University. All rights reserved.<br>
+
+        <a title="NCBO" href="http://www.bioontology.org">NCBO Website</a>&nbsp; <a title="Release Notes" href="http://www.bioontology.org/wiki/index.php/BioPortal_Release_Notes">Release Notes</a> &nbsp;
+        <a title="Terms of Use" href="http://www.bioontology.org/terms.html">Terms of Use</a>&nbsp;&nbsp;<a title="Privacy Policy" href="http://www.bioontology.org/privacy.html">Privacy Policy</a>
+    <br>
+    <br>
+    <br>
+  </div>
+  </body>
+</html>
+

@@ -1,0 +1,462 @@
+{% extends "main_template.html" %}
+
+{% block content %}
+
+
+<h1>BioPortal SPARQL Examples</h1>
+<br/>
+<br/>
+	
+    <link rel="stylesheet" href="/static/css/popup.css" type="text/css" media="screen" />
+	<script src="/static/javascript/popup.js" type="text/javascript"></script>
+<style type="text/css">
+<!--
+div.scroll {
+height: 250px;
+width: 780px;
+overflow: auto;
+border: 1px solid #666;
+padding: 8px;
+margin: 0px 0px 10px 12px;
+text-align: left;
+margin: 15px 0px 10px 0px;
+}
+
+
+.queryresults { border-collapse: collapse;  }
+.queryresults td, .queryresults th { padding: 0.2em 0.4em; vertical-align: top; }
+.unbound { color: #888; }
+.queryresults a small { font-size: 100%; color: #55a; }
+.queryresults small { font-size: 100%; color: #666; }
+.queryresults .property { white-space: nowrap; }
+.queryresults th { background: #234979; color: #FFFFE0; }
+.queryresults .odd td { background: #FFFAFA; }
+.queryresults .even td { background: #F5F5DC; }
+
+-->
+</style> 
+
+<style type="text/css">
+<!--
+
+.xx {
+margin-top: 15px;
+background: #E2EBF0;
+border: 1px solid #C1DAD7;
+padding: 10px;
+margin-bottom: 30px;
+font-size: 1.2em;
+}
+
+
+.CodeMirror {font-size: 1.0em; text-align: left; background: #E2EBF0;}
+
+.CodeMirror-scroll {
+  height: auto;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  width: 100%
+}
+
+
+.examTitle {
+    margin: 30px 0px 5px 5px;
+    width: 550px;
+    font-size: 1.1em;
+    color: grey;
+}
+
+-->
+</style>
+
+<script type="text/javascript">
+var edquerybox = null;
+
+function displayErrorMessage(message) {
+        var pre = document.createElement('pre');
+        pre.innerHTML = message;
+        _display(pre, 'result');
+}
+
+function _display(node, whereID) {
+        var where = document.getElementById(whereID);
+        if (!where) {
+            alert('ID not found: ' + whereID);
+            return;
+        }
+        while (where.firstChild) {
+            where.removeChild(where.firstChild);
+        }
+        if (node == null) return;
+        where.appendChild(node);
+    }
+
+function displayJSONResult(json, resultTitle) {
+        var div = document.createElement('div');
+        //var title = document.createElement('h2');
+        //title.appendChild(document.createTextNode(resultTitle));
+        //div.appendChild(title);
+        if (json.results.bindings.length == 0) {
+            var p = document.createElement('p');
+            p.className = 'empty';
+            p.appendChild(document.createTextNode('[no results]'));
+            div.appendChild(p);
+        } else {
+            div.appendChild(new SPARQLResultFormatter(json, this._namespaces).toDOM());
+        }
+        _display(div, 'result');
+        //_updateGraph(this._graph); // refresh links in new result
+    }
+
+
+function runQuery(n) {
+        var busy = document.createElement('div');
+        busy.className = 'busy';
+        busy.appendChild(document.createTextNode('Executing query ...'));
+        _display(busy, 'result');
+        centerPopup();
+		loadPopup();
+    var queryText = editors[n].getValue();
+    var _endpoint = '/sparql/';
+    var service = new SPARQL.Service(_endpoint);
+    service.setRequestHeader('Accept', 'application/sparql-results+json,*/*');
+    service.setOutput('json');
+    var successFunc = function(json) {
+        displayJSONResult(json, "some title");
+    };
+    var token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+    edquerybox.setValue(queryText);
+    service.query(queryText,token, {
+        success: successFunc,
+        failure: function(report) {
+            var message = report.responseText.match(/<pre>([\s\S]*)<\/pre>/);
+            if (message) {
+                displayErrorMessage(message[1]);
+            } else {
+                displayErrorMessage(report.responseText);
+            }
+            if (error_line) {
+                try {
+                getEditor().setMarker(parseInt(error_line)-1, "<span style=\"color: red\">● %N%</span>");
+                } catch (e) {
+                }
+            }
+        }
+    });
+
+}
+</script>
+
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div style="font-size: 1.1em;">
+<center>
+This page contains interactive SPARQL examples. More documentation is avalaible in our <a href="http://www.bioontology.org/wiki/index.php/SPARQL_BioPortal">Wiki documentation</a>
+</center>
+</div>
+</td>
+</tr></table>
+
+	<div id="popupContact">
+		<a id="popupContactClose">x</a>
+        <div id="querybox"><textarea id="queryboxTextArea" style="font-size: 0.5em" rows="6" cols="60"></textarea></div>
+        <div id="result" class="scroll">processing query</div>
+	</div>
+	<div id="backgroundPopup"></div>
+
+
+      <form id="form0">
+        {% csrf_token %}
+      </form>
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Select names and acronyms for all ontologies.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(0)" /></td></tr></table>
+</div>
+<textarea id="listont0" rows="6" cols="60">
+PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
+
+SELECT ?ont ?name ?acr
+WHERE { 
+   ?ont a omv:Ontology;
+       omv:acronym ?acr;
+       omv:name ?name .
+} 
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">All ontologies sorted by creation date including contact name and number of terms only if these exist (OPTIONAL clause).</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query"  onclick="javascript:runQuery(1)"/></td></tr></table>
+</div>
+<textarea id="listont1" rows="6" cols="60">
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+PREFIX meta: <http://bioportal.bioontology.org/metadata/def/> 
+PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
+
+SELECT ?ont ?name ?acr ?creationDate ?contactName ?terms
+WHERE { 
+   ?ont a omv:Ontology;
+       omv:acronym ?acr;
+       omv:name ?name;
+       meta:timestampCreation ?creationDate .
+       OPTIONAL { ?ont meta:hasContactName ?contactName . }
+       OPTIONAL { ?ont omv:numberOfClasses ?terms . }
+} ORDER BY DESC(xsd:dateTime(?creationDate))
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">List ontology categories.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(2)" /></td></tr></table>
+</div>
+<textarea id="listont2" rows="6" cols="60">
+PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
+
+SELECT DISTINCT ?category ?name WHERE {
+  ?category a omv:OntologyDomain .
+  ?category omv:name ?name .
+} 
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Ontology domains with number of ontologies per domain.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(10)" /></td></tr></table>
+</div>
+<textarea id="listont10" rows="6" cols="60">
+PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
+
+SELECT ?name, (COUNT(?ont) as ?c) WHERE {
+   ?ont <http://omv.ontoware.org/2005/05/ontology#hasDomain> ?dom .
+   ?dom omv:name ?name .
+} GROUP BY ?name ORDER BY DESC(?c)
+</textarea>
+</td>
+</tr></table>
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Get all versions of views from a virtual ontology id.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(3)" /></td></tr></table>
+</div>
+<textarea id="listont3" rows="6" cols="60">
+PREFIX meta: <http://bioportal.bioontology.org/metadata/def/> 
+
+SELECT * WHERE {
+   ?vrt a meta:VirtualOntology;
+       meta:id 1132;
+       meta:hasVirtualView ?virtualView .
+}
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Find all the ontologies that contain SNOMED in their name (case-sensitive).</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(4)" /></td></tr></table>
+</div>
+<textarea id="listont4" rows="6" cols="60">
+PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
+
+SELECT ?ont ?name ?acr
+WHERE { 
+	?ont a omv:Ontology .
+	?ont omv:acronym ?acr .
+	?ont omv:name ?name . 
+    FILTER( CONTAINS(?name, "SNOMED") )
+  }
+</textarea>
+</td>
+</tr></table>
+
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Get all root terms for an ontology version ID.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(5)" /></td></tr></table>
+</div>
+<textarea id="listont5" rows="6" cols="60">
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?root ?label WHERE { 
+   GRAPH <http://bioportal.bioontology.org/ontologies/1067> {
+       ?root a owl:Class .
+       ?root rdfs:label ?label .
+       OPTIONAL {
+           ?root rdfs:subClassOf ?super
+       }
+       FILTER (!bound(?super))
+   }
+}
+</textarea>
+</td>
+</tr></table>
+
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Get all ontology terms (owl:Class)</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(6)" /></td></tr></table>
+</div>
+<textarea id="listont6" rows="6" cols="60">
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?s ?label WHERE {
+   GRAPH <http://bioportal.bioontology.org/ontologies/1067> {
+       ?s a owl:Class .
+       ?s rdfs:label ?label .
+   }
+}
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Get all distinct predicates from a single ontology.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(7)"  /></td></tr></table>
+</div>
+<textarea id="listont7" rows="6" cols="60">
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?p WHERE {
+  GRAPH <http://bioportal.bioontology.org/ontologies/1353> {
+        ?s ?p ?o .
+  }
+}
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Get term direct sub-classes with labels. SNOMED Example.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(8)" /></td></tr></table>
+</div>
+<textarea id="listont8" rows="6" cols="60">
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX snomed: <http://purl.bioontology.org/ontology/SNOMEDCT/>
+
+SELECT DISTINCT ?x ?label
+WHERE 
+{
+    GRAPH <http://bioportal.bioontology.org/ontologies/1353> 
+    {
+        ?x rdfs:subClassOf snomed:428787002.
+        ?x rdfs:label ?label.
+    }
+}
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Example of case-insensitive term search.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(9)" /></td></tr></table>
+</div>
+<textarea id="listont9" rows="6" cols="60">
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT *
+FROM <http://bioportal.bioontology.org/ontologies/1353> 
+FROM <http://bioportal.bioontology.org/ontologies/globals> 
+WHERE 
+{
+    ?x rdfs:label ?label .
+    FILTER (CONTAINS ( UCASE(str(?label)), "MELANOMA") )
+} 
+</textarea>
+<span style="font-size:0.9em">
+For detailed usage of the globals graph read the <a href="http://www.bioontology.org/wiki/index.php/SPARQL_BioPortal">Wiki documentation</a>.
+</span>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Example of case-insensitive term with subclass relationship.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(11)" /></td></tr></table>
+</div>
+<textarea id="listont11" rows="6" cols="60">
+
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT *
+FROM <http://bioportal.bioontology.org/ontologies/1353> 
+FROM <http://bioportal.bioontology.org/ontologies/globals> 
+WHERE 
+{
+    ?x rdfs:label ?label .
+    ?x rdfs:subClassOf ?parent .
+    ?parent rdfs:label ?parentLabel .
+    FILTER (CONTAINS ( UCASE(str(?label)), "MELANOMA") && CONTAINS ( UCASE(str(?parentLabel)), "SKIN") )
+} 
+
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="xx" style="font-size: 1.5em;">
+<center>
+<a href="http://www.bioontology.org/wiki/index.php/SPARQL_BioPortal">Wiki documentation</a>
+</center>
+</div>
+</td>
+</tr></table>
+    <script>
+      nq=12;
+      var editors = new Array();
+      for (i=0;i<nq;i++) {
+         var ed =  CodeMirror.fromTextArea(document.getElementById("listont"+i), {
+            mode: "application/x-sparql-query",
+            tabMode: "indent",
+            matchBrackets: true,
+          });
+          editors.push(ed);
+      }
+      edquerybox =  CodeMirror.fromTextArea(document.getElementById("queryboxTextArea"), {
+            mode: "application/x-sparql-query",
+            tabMode: "indent",
+            matchBrackets: true,
+          });
+
+    </script>
+{% endblock %}
