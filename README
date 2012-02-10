@@ -1,0 +1,15 @@
+This is a django app that acts as a proxy for BioPortal's public triple store. It uses a modified version of the SNORQL browser to help the navigation across graphs and codemirror for syntax highlighting. 
+
+The main feature of this proxy is to use BioPortal's authentication service in order to restrict access to private and licensed ontologies. This layer of SPARQL security is provided together with a fork of 4store where we have implemented access control lists. See:
+
+https://github.com/ncbo/4store/tree/ncbo_acls
+
+If you are interested in a similar deployment contact support@bioontology.org for support.
+
+
+
+******************************************
+* Powered By:                            *
+*                                        *
+* 4store, SNORQL, django and codemirror. *
+******************************************
