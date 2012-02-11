@@ -1,0 +1,6 @@
+*.pyc
+*.log
+*.swp
+exclude.rsync
+rsync_to
+
