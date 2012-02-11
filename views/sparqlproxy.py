@@ -68,7 +68,9 @@ def proxy(request,query, url):
 # http://stackoverflow.com/questions/2922874/how-to-stream-an-httpresponse-with-django
 ####
 @condition(etag_func=None)
-def sparql_auth(request): 
+def sparql_auth(request):
+    query = None
+    user_api_key = None
     try:
         query = get_parameter(request,"query")
         if not query:
@@ -116,7 +118,7 @@ def sparql_auth(request):
         return response
 
     except Exception, e:
-        logger.exception("Error processing sparql")
+        logger.exception("Error processing sparql %s\n%s"%(user_api_key,query))
         response = HttpResponse(mimetype="application/json")
         response.write("Error calling sparql [%s] %s"%(user_api_key,e))
         response.status_code = 500;

@@ -180,7 +180,8 @@ LOGGING = {
             'propagate': True,
         },
         'views': {
-            'handlers': ['console','fileout'],
+            # 'handlers': ['console','fileout'],
+            'handlers': ['console'],
             'level': 'DEBUG',
         }
     }
