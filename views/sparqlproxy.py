@@ -1,4 +1,10 @@
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed
+import logging
+import json
+from urllib import urlencode
+from urllib2 import HTTPError
+
+from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseNotAllowed
 from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
 from django.views.decorators.http import condition
@@ -6,13 +12,9 @@ from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import requires_csrf_token
 
+import httpclient
 from services import Services
-import logging, json
-from urllib2 import HTTPError
-import httplib2
-from config import PROXY_FORMAT
-from config import USER_ID
-from urllib import urlencode
+from config import PROXIED_SERVER, USER_ID
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,8 @@ def is_web_frontend(query):
         apikey = query["apikey"] if "apikey" in query else None
         if apikey and len(apikey) > 10:
             return False
-        token = query["csrfmiddlewaretoken"] if "csrfmiddlewaretoken" in query else None
+        token = query["csrfmiddlewaretoken"]\
+                    if "csrfmiddlewaretoken" in query else None
         if token and len(token) > 10:
             return True
     except Exception, e:
@@ -39,28 +42,53 @@ def is_web_frontend(query):
     return False 
 
 def proxy(request,query, url):
-    conn = httplib2.Http()
+    http_client = httpclient.new_http_client()
     if request.method == "GET":
-        url_ending = "%s?%s" % (url, urlencode(query))
         ui = is_web_frontend(query)
+        params = dict([(k,query[k]) for k in query])
         if ui:
-            url_ending += "&apikey=" + USER_ID
-        url = PROXY_FORMAT % url_ending
+            params["apikey"] = USER_ID
         headers=dict()
         if 'HTTP_ACCEPT' in request.META:
-           headers={"Accept" : request.META["HTTP_ACCEPT"] } 
-        resp, content = conn.request(url, "GET", headers=headers )
-        content_type = resp["content-type"] if "content-type" in resp else None
-        respd = HttpResponse(mimetype=content_type)
+           headers["Accept"] = request.META["HTTP_ACCEPT"]
+        header_resp,\
+        code_resp,\
+        content_resp = http_client.get(PROXIED_SERVER,params, headers)
+        content_type = header_resp["content-type"]\
+                            if "content-type" in header_resp else None
+        respd = HttpResponse(content_resp, mimetype=content_type)
         respd['Access-Control-Allow-Origin'] = "*"
-        respd.write(content)
-        respd.status_code = resp.status
+        respd.status_code = code_resp 
         return respd
     elif request.method == "POST":
         response = HttpResponse()
         response.status_code = 403
         response.write("403 FORBIDEN - POST Requests not allowed")
         return response
+
+def error_api_key():
+    response = HttpResponse()
+    response.status_code = 403
+    response.write("403 FORBIDEN - Apikey not provided")
+    return response
+
+def error_not_query_request():
+    response = HttpResponse()
+    msg = "ERROR 500 - SPARQL Protocol 'query' parameter not provided"
+    response.status_code = 500
+    response.write(msg)
+    logger.info(msg)
+    return response  
+
+def error_apikey_validation(user_api_key):
+    response = HttpResponse()
+    msg = "403 FORBIDEN apikey [%s] not valid. Trace 1."%\
+          user_api_key
+    response.status_code = 403
+    response.write(msg)
+    logger.info(msg)
+    logger.exception(auth_err)
+    return response 
 
 ####
 # we should try to stream out the response:
@@ -74,23 +102,18 @@ def sparql_auth(request):
     try:
         query = get_parameter(request,"query")
         if not query:
-            response = HttpResponse()
-            msg = "ERROR 500 - SPARQL Protocol 'query' parameter not provided"
-            response.status_code = 500
-            response.write(msg)
-            logger.info(msg)
-            return response  
+           return error_not_query_request()
 
         user_api_key = None
         user_id = None
-        query = request.GET.copy() if request.method == "GET" else request.POST.copy()
+        query = request.GET.copy() \
+                    if request.method == "GET"\
+                    else request.POST.copy()
+
         if not is_web_frontend(query):
             user_api_key = get_parameter(request,"apikey")
             if not user_api_key:
-                    response = HttpResponse()
-                    response.status_code = 403
-                    response.write("403 FORBIDEN - Apikey not provided")
-                    return response
+                return error_api_key()
 
             services = Services(user_api_key)
             try:
@@ -98,21 +121,10 @@ def sparql_auth(request):
                 query["apikey"]=user_id
             except HTTPError, auth_err:
                 if auth_err.getcode() == 403:
-                    response = HttpResponse()
-                    msg = "403 FORBIDEN apikey [%s] not valid. Trace 1."%user_api_key
-                    response.status_code = 403
-                    response.write(msg)
-                    logger.info(msg)
-                    return response  
+                    return error_apikey_validation(user_api_key,auth_err)
                 raise auth_err
             except Exception, auth_err:
-                response = HttpResponse()
-                msg = "403 FORBIDEN apikey [%s] not valid. Trace 2. %s"%(user_api_key,auth_err)
-                response.status_code = 403
-                response.write(msg)
-                logger.info(msg)
-                logger.exception(auth_err)
-                return response  
+                return error_apikey_validation(user_api_key,auth_err)
 
         response = proxy(request,query, "sparql/")
         return response

@@ -1,6 +1,5 @@
 from api_calls import BioportalAPIClient, get_data_graph
-from sparql_calls import BioportalSPARQLClient
-from config import REST_URL, SPARQL_SERVER, API_KEY_AUTH
+from config import REST_URL, API_KEY_AUTH
 import os,json
 import pdb
 import logging, json
@@ -20,8 +19,6 @@ if CACHE_DJANGO:
     bioportalAPI = BioportalAPIClient(REST_URL,cache=cache)
 else:
     bioportalAPI = BioportalAPIClient(REST_URL)
-
-bioportalSPARQL = BioportalSPARQLClient(SPARQL_SERVER,API_KEY_AUTH)
 
 class Services:
     def __init__(self,user_api_key=None):
