@@ -7,7 +7,7 @@ import logging
 import urllib,urllib2
 import json, xml2json
 import email_sender
-from config import REST_URL, SPARQL_SERVER, API_KEY_AUTH   
+from config import REST_URL, API_KEY_AUTH
     
 def http_request(service,params,api_key):
     try:
