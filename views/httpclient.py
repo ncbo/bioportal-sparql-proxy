@@ -23,12 +23,21 @@ class HTTPStreamClient(object):
         pass
     def get(self, url, values, headers):
         data = urllib.urlencode(values)
+        error_msg = None
+        error = None
         req = urllib2.Request(url, data, headers=headers)
         response = urllib2.urlopen(req)
         def response_streamer():
-            while True: 
-                l=response.read(config.STREAM_BUFFER_SIZE)
-                if len(l)==0:
-                    break
-                yield l
-        return response.headers,response.getcode(), response_streamer()
+            if error_msg:
+                yield error_msg
+            else:
+                while True:
+                    l=response.read(config.STREAM_BUFFER_SIZE)
+                    if len(l)==0:
+                        break
+                    yield l
+        if error_msg:
+            return error.headers,error.code,response_streamer()
+        return response.headers,\
+               response.getcode(),\
+               response_streamer()

@@ -175,6 +175,7 @@ var query = 'SELECT ?category ?name (count(?ontology) as ?counter) WHERE {'+
                     } else {
                         dummy.displayErrorMessage("Internal error, please contact administrator. " + report.responseText);
                     }
+                    dummy.displayErrorMessage("Internal error, please contact administrator. " + report.responseText);
                 }
                 else if (report.status == 500) {
                     dummy.displayErrorMessage("Internal error, please contact administrator. " + report.responseText);

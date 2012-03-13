@@ -53,12 +53,12 @@ def proxy(request,query, url):
            headers["Accept"] = request.META["HTTP_ACCEPT"]
         header_resp,\
         code_resp,\
-        content_resp = http_client.get(PROXIED_SERVER,params, headers)
+        content_resp = http_client.get(PROXIED_SERVER, params, headers)
         content_type = header_resp["content-type"]\
                             if "content-type" in header_resp else None
         respd = HttpResponse(content_resp, mimetype=content_type)
         respd['Access-Control-Allow-Origin'] = "*"
-        respd.status_code = code_resp 
+        respd.status_code = code_resp
         return respd
     elif request.method == "POST":
         response = HttpResponse()
@@ -128,11 +128,19 @@ def sparql_auth(request):
 
         response = proxy(request,query, "sparql/")
         return response
-
+    except HTTPError, e:
+        error_msg = "\n".join(filter(lambda x: len(x.strip()) > 0 \
+                                        and "4store" not in x,\
+                                        e.readlines()))
+        response = HttpResponse()
+        print error_msg
+        response.write("Error with SPARQL query: %s"%(error_msg))
+        response.status_code = e.code;
+        return response
     except Exception, e:
         logger.exception("Error processing sparql %s\n%s"%(user_api_key,query))
-        response = HttpResponse(mimetype="application/json")
-        response.write("Error calling sparql [%s] %s"%(user_api_key,e))
+        response = HttpResponse()
+        response.write("Internal error %s"%(e))
         response.status_code = 500;
         return response
 
