@@ -172,6 +172,129 @@ This page contains interactive SPARQL examples. More documentation is avalaible 
 <table width="70%" border="0">
 <tr><td valign="top" width="50%">
 <div class="examTitle">
+<table><tr><td width="80%">Get all graphs IDs that contain ontology content.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query"  onclick="javascript:runQuery(12)"/></td></tr></table>
+</div>
+<textarea id="listont12" rows="6" cols="60">
+PREFIX meta: <http://bioportal.bioontology.org/metadata/def/> 
+
+SELECT DISTINCT ?version ?graph
+WHERE { 
+    ?version meta:hasDataGraph ?graph
+}
+</textarea>
+<div style="margin-top: 0px; background: #FFFFE0;padding: 9px;">
+<span>Note: This public SPARQL endpoint only contains the latest version of each BioPortal ontology.
+Graph IDs can be used to target queries to a specific ontology. For example, 
+to query SNOMED, the graph ID is http://bioportal.bioontology.org/ontologies/SNOMEDCT</span>
+</div>
+</td>
+</tr></table>
+
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Get term direct sub-classes with labels. SNOMED Example.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(8)" /></td></tr></table>
+</div>
+<textarea id="listont8" rows="6" cols="60">
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX snomed-term: <http://purl.bioontology.org/ontology/SNOMEDCT/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+SELECT DISTINCT ?x ?label
+FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT> 
+WHERE 
+{
+    ?x rdfs:subClassOf snomed-term:363664003 .
+    ?x skos:prefLabel  ?label.
+}
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Get all root terms from the Human Phenotype Ontology (HP) ontology.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(5)" /></td></tr></table>
+</div>
+<textarea id="listont5" rows="6" cols="60">
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?root ?label 
+FROM <http://bioportal.bioontology.org/ontologies/HP>
+WHERE { 
+   ?root a owl:Class .
+   ?root rdfs:label ?label .
+   OPTIONAL {
+       ?root rdfs:subClassOf ?super
+   }
+   FILTER (!bound(?super))
+}
+</textarea>
+</td>
+</tr></table>
+
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Get all ontology terms (owl:Class) from the ABA Adult Mouse Brain (ABA) ontology.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(6)" /></td></tr></table>
+</div>
+<textarea id="listont6" rows="6" cols="60">
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?s ?label WHERE {
+   GRAPH <http://bioportal.bioontology.org/ontologies/ABA> {
+       ?s a owl:Class .
+       ?s rdfs:label ?label .
+   }
+}
+</textarea>
+<div style="margin-top: 0px; background: #FFFFE0;padding: 9px;">
+In large ontologies, like SNOMED or Gazetteer (GAZ), getting all the terms with just one query can be problematic. The SPARQL server can produce large resultsets difficult to be parsed in the client side. Pagination with LIMIT and OFFSET is recommended for these cases. 
+</div>
+</td>
+</tr></table>
+
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Example of case-insensitive term search in SNOMED</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(9)" /></td></tr></table>
+</div>
+<textarea id="listont9" rows="6" cols="60">
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT *
+FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT> 
+FROM <http://bioportal.bioontology.org/ontologies/globals> 
+WHERE 
+{
+    ?x rdfs:label ?label .
+    FILTER (CONTAINS ( UCASE(str(?label)), "MELANOMA") )
+} 
+</textarea>
+<div style="margin-top: 0px; background: #FFFFE0;padding: 9px;">
+<span>
+For detailed usage of the globals graph read the <a href="http://www.bioontology.org/wiki/index.php/SPARQL_BioPortal">Wiki documentation</a>.
+</div>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
 <table><tr><td width="80%">Select names and acronyms for all ontologies.</td><td  width="*">
 <input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(0)" /></td></tr></table>
 </div>
@@ -187,6 +310,8 @@ WHERE {
 </textarea>
 </td>
 </tr></table>
+
+
 
 <!-- query -->
 <table width="70%" border="0">
@@ -289,52 +414,7 @@ WHERE {
 </tr></table>
 
 
-<!-- query -->
-<table width="70%" border="0">
-<tr><td valign="top" width="50%">
-<div class="examTitle">
-<table><tr><td width="80%">Get all root terms for an ontology version ID.</td><td  width="*">
-<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(5)" /></td></tr></table>
-</div>
-<textarea id="listont5" rows="6" cols="60">
-PREFIX owl:  <http://www.w3.org/2002/07/owl#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT DISTINCT ?root ?label WHERE { 
-   GRAPH <http://bioportal.bioontology.org/ontologies/1067> {
-       ?root a owl:Class .
-       ?root rdfs:label ?label .
-       OPTIONAL {
-           ?root rdfs:subClassOf ?super
-       }
-       FILTER (!bound(?super))
-   }
-}
-</textarea>
-</td>
-</tr></table>
-
-
-<!-- query -->
-<table width="70%" border="0">
-<tr><td valign="top" width="50%">
-<div class="examTitle">
-<table><tr><td width="80%">Get all ontology terms (owl:Class)</td><td  width="*">
-<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(6)" /></td></tr></table>
-</div>
-<textarea id="listont6" rows="6" cols="60">
-PREFIX owl:  <http://www.w3.org/2002/07/owl#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
-SELECT DISTINCT ?s ?label WHERE {
-   GRAPH <http://bioportal.bioontology.org/ontologies/1067> {
-       ?s a owl:Class .
-       ?s rdfs:label ?label .
-   }
-}
-</textarea>
-</td>
-</tr></table>
 
 <!-- query -->
 <table width="70%" border="0">
@@ -347,7 +427,7 @@ SELECT DISTINCT ?s ?label WHERE {
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT DISTINCT ?p WHERE {
-  GRAPH <http://bioportal.bioontology.org/ontologies/1353> {
+  GRAPH <http://bioportal.bioontology.org/ontologies/BHO> {
         ?s ?p ?o .
   }
 }
@@ -355,55 +435,7 @@ SELECT DISTINCT ?p WHERE {
 </td>
 </tr></table>
 
-<!-- query -->
-<table width="70%" border="0">
-<tr><td valign="top" width="50%">
-<div class="examTitle">
-<table><tr><td width="80%">Get term direct sub-classes with labels. SNOMED Example.</td><td  width="*">
-<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(8)" /></td></tr></table>
-</div>
-<textarea id="listont8" rows="6" cols="60">
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX owl: <http://www.w3.org/2002/07/owl#>
-PREFIX snomed: <http://purl.bioontology.org/ontology/SNOMEDCT/>
 
-SELECT DISTINCT ?x ?label
-WHERE 
-{
-    GRAPH <http://bioportal.bioontology.org/ontologies/1353> 
-    {
-        ?x rdfs:subClassOf snomed:428787002.
-        ?x rdfs:label ?label.
-    }
-}
-</textarea>
-</td>
-</tr></table>
-
-<!-- query -->
-<table width="70%" border="0">
-<tr><td valign="top" width="50%">
-<div class="examTitle">
-<table><tr><td width="80%">Example of case-insensitive term search.</td><td  width="*">
-<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(9)" /></td></tr></table>
-</div>
-<textarea id="listont9" rows="6" cols="60">
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
-SELECT DISTINCT *
-FROM <http://bioportal.bioontology.org/ontologies/1353> 
-FROM <http://bioportal.bioontology.org/ontologies/globals> 
-WHERE 
-{
-    ?x rdfs:label ?label .
-    FILTER (CONTAINS ( UCASE(str(?label)), "MELANOMA") )
-} 
-</textarea>
-<span style="font-size:0.9em">
-For detailed usage of the globals graph read the <a href="http://www.bioontology.org/wiki/index.php/SPARQL_BioPortal">Wiki documentation</a>.
-</span>
-</td>
-</tr></table>
 
 <!-- query -->
 <table width="70%" border="0">
@@ -417,7 +449,7 @@ For detailed usage of the globals graph read the <a href="http://www.bioontology
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT DISTINCT *
-FROM <http://bioportal.bioontology.org/ontologies/1353> 
+FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT> 
 FROM <http://bioportal.bioontology.org/ontologies/globals> 
 WHERE 
 {
@@ -442,7 +474,7 @@ WHERE
 </td>
 </tr></table>
     <script>
-      nq=12;
+      nq=13;
       var editors = new Array();
       for (i=0;i<nq;i++) {
          var ed =  CodeMirror.fromTextArea(document.getElementById("listont"+i), {
