@@ -178,9 +178,10 @@ This page contains interactive SPARQL examples. More documentation is avalaible 
 <textarea id="listont12" rows="6" cols="60">
 PREFIX meta: <http://bioportal.bioontology.org/metadata/def/> 
 
-SELECT DISTINCT ?version ?graph
+SELECT DISTINCT ?vrtID ?graph
 WHERE { 
-    ?version meta:hasDataGraph ?graph
+    ?vrtID meta:hasVersion ?version .
+    ?version meta:hasDataGraph ?graph .
 }
 </textarea>
 <div style="margin-top: 0px; background: #FFFFE0;padding: 9px;">
