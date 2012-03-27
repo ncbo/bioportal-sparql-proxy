@@ -51,6 +51,8 @@ def proxy(request,query, url):
         headers=dict()
         if 'HTTP_ACCEPT' in request.META:
            headers["Accept"] = request.META["HTTP_ACCEPT"]
+           if ui and ("describe" in query["query"].lower() or "construct" in query["query"].lower()):
+                headers["Accept"]="text/plain"
         header_resp,\
         code_resp,\
         content_resp = http_client.get(PROXIED_SERVER, params, headers)
