@@ -14,7 +14,7 @@ from django.views.decorators.csrf import requires_csrf_token
 
 import httpclient
 from services import Services
-from config import PROXIED_SERVER, USER_ID
+from config import PROXIED_SERVER, USER_ID, BY_PASS_KEYS
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,9 @@ def proxy(request,query, url):
         headers=dict()
         if 'HTTP_ACCEPT' in request.META:
            headers["Accept"] = request.META["HTTP_ACCEPT"]
-           if ui and ("describe" in query["query"].lower() or "construct" in query["query"].lower()):
-                headers["Accept"]="text/plain"
+           if ui and ("describe" in query["query"].lower() or\
+                "construct" in query["query"].lower()):
+                    headers["Accept"]="text/plain"
         header_resp,\
         code_resp,\
         content_resp = http_client.get(PROXIED_SERVER, params, headers)
@@ -101,6 +102,7 @@ def error_apikey_validation(user_api_key):
 def sparql_auth(request):
     query = None
     user_api_key = None
+    by_pass = False
     try:
         query = get_parameter(request,"query")
         if not query:
@@ -116,7 +118,9 @@ def sparql_auth(request):
             user_api_key = get_parameter(request,"apikey")
             if not user_api_key:
                 return error_api_key()
-
+            by_pass = user_api_key in BY_PASS_KEYS
+            if by_pass:
+                query["soft-limit"]=-1
             services = Services(user_api_key)
             try:
                 user_id = services.validate_api_key()
