@@ -8,5 +8,8 @@ API_KEY_AUTH = "SOME API KEY"
 PROXY_DOMAIN = "bmir-dev1.stanford.edu:8080"
 PROXIED_SERVER = u"http://%s/sparql/" % PROXY_DOMAIN
 
+#a set of api keys that by pass timeouts
+BY_PASS_KEYS = set([])
+
 USE_HTTPLIB2 = False
 STREAM_BUFFER_SIZE = 128 * 1024
