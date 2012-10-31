@@ -467,6 +467,60 @@ WHERE
 <!-- query -->
 <table width="70%" border="0">
 <tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Query that lists all the backend graphs that contain mapping data.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(13)" /></td></tr></table>
+</div>
+<textarea id="listont13" rows="6" cols="60">
+
+SELECT DISTINCT ?g WHERE { 
+GRAPH ?g { 
+?s a <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#One_To_One_Mapping> . }}
+
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Query to get mapping stats for the Pathway ontology.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(14)" /></td></tr></table>
+</div>
+<textarea id="listont14" rows="6" cols="60">
+
+PREFIX map: <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#> 
+SELECT ?sourceOntologyId (count(?mappingId) as ?count) WHERE { 
+   ?mappingId map:target_ontology <http://bioportal.bioontology.org/ontologies/1035> . 
+   ?mappingId map:source_ontology ?sourceOntologyId . }
+GROUP BY ?sourceOntologyId ORDER BY DESC(?count)  
+
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
+<div class="examTitle">
+<table><tr><td width="80%">Query for mapping data that retrieves target terms from a given source term.</td><td  width="*">
+<input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(15)" /></td></tr></table>
+</div>
+<textarea id="listont15" rows="6" cols="60">
+
+PREFIX maps: <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#> 
+SELECT DISTINCT * WHERE { 
+   ?s maps:source <http://purl.obolibrary.org/obo/DOID_8545>;
+      maps:target ?target . }
+
+</textarea>
+</td>
+</tr></table>
+
+<!-- query -->
+<table width="70%" border="0">
+<tr><td valign="top" width="50%">
 <div class="xx" style="font-size: 1.5em;">
 <center>
 <a href="http://www.bioontology.org/wiki/index.php/SPARQL_BioPortal">Wiki documentation</a>
@@ -475,7 +529,7 @@ WHERE
 </td>
 </tr></table>
     <script>
-      nq=13;
+      nq=16;
       var editors = new Array();
       for (i=0;i<nq;i++) {
          var ed =  CodeMirror.fromTextArea(document.getElementById("listont"+i), {
