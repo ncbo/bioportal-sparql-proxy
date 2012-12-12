@@ -50,17 +50,29 @@ margin-bottom: 20px;
 
 }
 
+
 </style>
+<script language="javascript" type="text/javascript">
+<!--
+function feedback() {
+    newwindow=window.open('http://bioportal.bioontology.org/feedback?location=http%3A%2F%2Fsparql.bioontology.org%2F&pop=true',
+            'SPARQL BioPortal Feedback Page','height=750,width=820');
+	if (window.focus) {newwindow.focus()}
+	return false;
+}
+// -->
+</script>
   </head>
    <body>
    <div id="header" style="background: url('http://bioportal.bioontology.org/images/layout/header_bg.png') repeat-x">
+     <table width="95%"><tr><td width="80%">
      <ul style="list-style-type: none;height: 50px;margin: auto;">
      <li style="padding-right: 60px; float: left;">
      <a href="/"><img src="/static/images/bioportal_sparql.png" border="0" alt="BioPortal SPARQL Logo"/></a></li>
      <li style="float: left;">
      <h1 id="title" style="padding: 0.5em; color: white;font: 17px/1.531 arial,helvetica,clean,sans-serif"></h1></li>
      </ul>
-     </tr></table>
+     </td><td><span ><a href="#" onclick="return feedback();"  style="color: white">Feedback</a></span></td></tr></table>
     </div>
     <center>
     <!--
