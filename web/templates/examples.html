@@ -6,7 +6,7 @@
 <h1>BioPortal SPARQL Examples</h1>
 <br/>
 <br/>
-	
+
     <link rel="stylesheet" href="/static/css/popup.css" type="text/css" media="screen" />
 	<script src="/static/javascript/popup.js" type="text/javascript"></script>
 <style type="text/css">
@@ -34,7 +34,7 @@ margin: 15px 0px 10px 0px;
 .queryresults .even td { background: #F5F5DC; }
 
 -->
-</style> 
+</style>
 
 <style type="text/css">
 <!--
@@ -118,6 +118,8 @@ function runQuery(n) {
 		loadPopup();
     var queryText = editors[n].getValue();
     var _endpoint = '/sparql/';
+    if (n > 12)
+        _endpoint = '/mappings/sparql/';
     var service = new SPARQL.Service(_endpoint);
     service.setRequestHeader('Accept', 'application/sparql-results+json,*/*');
     service.setOutput('json');
@@ -176,17 +178,17 @@ This page contains interactive SPARQL examples. More documentation is avalaible 
 <input type="button" style="font-size: 0.8em;" value="test this query"  onclick="javascript:runQuery(12)"/></td></tr></table>
 </div>
 <textarea id="listont12" rows="6" cols="60">
-PREFIX meta: <http://bioportal.bioontology.org/metadata/def/> 
+PREFIX meta: <http://bioportal.bioontology.org/metadata/def/>
 
 SELECT DISTINCT ?vrtID ?graph
-WHERE { 
+WHERE {
     ?vrtID meta:hasVersion ?version .
     ?version meta:hasDataGraph ?graph .
 }
 </textarea>
 <div style="margin-top: 0px; background: #FFFFE0;padding: 9px;">
 <span>Note: This public SPARQL endpoint only contains the latest version of each BioPortal ontology.
-Graph IDs can be used to target queries to a specific ontology. For example, 
+Graph IDs can be used to target queries to a specific ontology. For example,
 to query SNOMED, the graph ID is http://bioportal.bioontology.org/ontologies/SNOMEDCT</span>
 </div>
 </td>
@@ -205,8 +207,8 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX snomed-term: <http://purl.bioontology.org/ontology/SNOMEDCT/>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 SELECT DISTINCT ?x ?label
-FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT> 
-WHERE 
+FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT>
+WHERE
 {
     ?x rdfs:subClassOf snomed-term:363664003 .
     ?x skos:prefLabel  ?label.
@@ -226,9 +228,9 @@ WHERE
 PREFIX owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT DISTINCT ?root ?label 
+SELECT DISTINCT ?root ?label
 FROM <http://bioportal.bioontology.org/ontologies/HP>
-WHERE { 
+WHERE {
    ?root a owl:Class .
    ?root rdfs:label ?label .
    OPTIONAL {
@@ -260,7 +262,7 @@ SELECT DISTINCT ?s ?label WHERE {
 }
 </textarea>
 <div style="margin-top: 0px; background: #FFFFE0;padding: 9px;">
-In large ontologies, like SNOMED or Gazetteer (GAZ), getting all the terms with just one query can be problematic. The SPARQL server can produce large resultsets difficult to be parsed in the client side. Pagination with LIMIT and OFFSET is recommended for these cases. 
+In large ontologies, like SNOMED or Gazetteer (GAZ), getting all the terms with just one query can be problematic. The SPARQL server can produce large resultsets difficult to be parsed in the client side. Pagination with LIMIT and OFFSET is recommended for these cases.
 </div>
 </td>
 </tr></table>
@@ -277,13 +279,13 @@ In large ontologies, like SNOMED or Gazetteer (GAZ), getting all the terms with 
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT DISTINCT *
-FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT> 
-FROM <http://bioportal.bioontology.org/ontologies/globals> 
-WHERE 
+FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT>
+FROM <http://bioportal.bioontology.org/ontologies/globals>
+WHERE
 {
     ?x rdfs:label ?label .
     FILTER (CONTAINS ( UCASE(str(?label)), "MELANOMA") )
-} 
+}
 </textarea>
 <div style="margin-top: 0px; background: #FFFFE0;padding: 9px;">
 <span>
@@ -303,11 +305,11 @@ For detailed usage of the globals graph read the <a href="http://www.bioontology
 PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
 
 SELECT ?ont ?name ?acr
-WHERE { 
+WHERE {
    ?ont a omv:Ontology;
        omv:acronym ?acr;
        omv:name ?name .
-} 
+}
 </textarea>
 </td>
 </tr></table>
@@ -323,11 +325,11 @@ WHERE {
 </div>
 <textarea id="listont1" rows="6" cols="60">
 PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
-PREFIX meta: <http://bioportal.bioontology.org/metadata/def/> 
+PREFIX meta: <http://bioportal.bioontology.org/metadata/def/>
 PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
 
 SELECT ?ont ?name ?acr ?creationDate ?contactName ?terms
-WHERE { 
+WHERE {
    ?ont a omv:Ontology;
        omv:acronym ?acr;
        omv:name ?name;
@@ -352,7 +354,7 @@ PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
 SELECT DISTINCT ?category ?name WHERE {
   ?category a omv:OntologyDomain .
   ?category omv:name ?name .
-} 
+}
 </textarea>
 </td>
 </tr></table>
@@ -382,7 +384,7 @@ SELECT ?name, (COUNT(?ont) as ?c) WHERE {
 <input type="button" style="font-size: 0.8em;" value="test this query" onclick="javascript:runQuery(3)" /></td></tr></table>
 </div>
 <textarea id="listont3" rows="6" cols="60">
-PREFIX meta: <http://bioportal.bioontology.org/metadata/def/> 
+PREFIX meta: <http://bioportal.bioontology.org/metadata/def/>
 
 SELECT * WHERE {
    ?vrt a meta:VirtualOntology;
@@ -404,10 +406,10 @@ SELECT * WHERE {
 PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
 
 SELECT ?ont ?name ?acr
-WHERE { 
+WHERE {
 	?ont a omv:Ontology .
 	?ont omv:acronym ?acr .
-	?ont omv:name ?name . 
+	?ont omv:name ?name .
     FILTER( CONTAINS(?name, "SNOMED") )
   }
 </textarea>
@@ -450,19 +452,23 @@ SELECT DISTINCT ?p WHERE {
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT DISTINCT *
-FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT> 
-FROM <http://bioportal.bioontology.org/ontologies/globals> 
-WHERE 
+FROM <http://bioportal.bioontology.org/ontologies/SNOMEDCT>
+FROM <http://bioportal.bioontology.org/ontologies/globals>
+WHERE
 {
     ?x rdfs:label ?label .
     ?x rdfs:subClassOf ?parent .
     ?parent rdfs:label ?parentLabel .
     FILTER (CONTAINS ( UCASE(str(?label)), "MELANOMA") && CONTAINS ( UCASE(str(?parentLabel)), "SKIN") )
-} 
+}
 
 </textarea>
 </td>
 </tr></table>
+
+<div style="width: 70%; margin: 50px 0px 20px 0px; background: #F6F9ED; padding: 6px; border: 1px solid #aaaaaa;">
+Notice that as of January 30th (2013) we are hosting the mappings in a separate endpoint. This eases our regular mapping updates. Programmatic queries that target mapping data need to use the following endpoint: http://sparql.bioontology.org/mappings/sparql
+</div>
 
 <!-- query -->
 <table width="70%" border="0">
@@ -473,8 +479,8 @@ WHERE
 </div>
 <textarea id="listont13" rows="6" cols="60">
 
-SELECT DISTINCT ?g WHERE { 
-GRAPH ?g { 
+SELECT DISTINCT ?g WHERE {
+GRAPH ?g {
 ?s a <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#One_To_One_Mapping> . }}
 
 </textarea>
@@ -490,11 +496,11 @@ GRAPH ?g {
 </div>
 <textarea id="listont14" rows="6" cols="60">
 
-PREFIX map: <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#> 
-SELECT ?sourceOntologyId (count(?mappingId) as ?count) WHERE { 
-   ?mappingId map:target_ontology <http://bioportal.bioontology.org/ontologies/1035> . 
+PREFIX map: <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#>
+SELECT ?sourceOntologyId (count(?mappingId) as ?count) WHERE {
+   ?mappingId map:target_ontology <http://bioportal.bioontology.org/ontologies/1035> .
    ?mappingId map:source_ontology ?sourceOntologyId . }
-GROUP BY ?sourceOntologyId ORDER BY DESC(?count)  
+GROUP BY ?sourceOntologyId ORDER BY DESC(?count)
 
 </textarea>
 </td>
@@ -509,8 +515,8 @@ GROUP BY ?sourceOntologyId ORDER BY DESC(?count)
 </div>
 <textarea id="listont15" rows="6" cols="60">
 
-PREFIX maps: <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#> 
-SELECT DISTINCT * WHERE { 
+PREFIX maps: <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#>
+SELECT DISTINCT * WHERE {
    ?s maps:source <http://purl.obolibrary.org/obo/DOID_8545>;
       maps:target ?target . }
 
