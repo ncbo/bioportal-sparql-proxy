@@ -35,12 +35,34 @@ text-align: left;
 }
 
 -->
-</style> 
+</style>
 
 <script type="text/javascript">
 $(document).ready(function(){
     snorql.start();
 });
+
+function ontologiesSampleQuery() {
+var sampleQuery = "PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>\n" +
+
+"SELECT ?ont ?name ?acr\n" +
+"WHERE {\n" +
+"	?ont a omv:Ontology .\n" +
+"	?ont omv:acronym ?acr .\n" +
+"	?ont omv:name ?name .\n" +
+"}}\n";
+getEditor().setValue(sampleQuery);
+}
+
+function mappingSampleQuery() {
+    var sampleQuery = "PREFIX map: <http://protege.stanford.edu/ontologies/mappings/mappings.rdfs#>\n"+
+"\n" +
+"SELECT (count(?m) as ?c) WHERE {\n"+
+"      ?m map:source_ontology <http://bioportal.bioontology.org/ontologies/1032> ;\n"+
+"             map:target_ontology  <http://bioportal.bioontology.org/ontologies/1000> .\n"+
+"}\n";
+    getEditor().setValue(sampleQuery);
+}
 </script>
 
 <table width="77%" border="0"><tr><td width="75%">
@@ -74,6 +96,7 @@ store.</div>
         <input type="hidden" name="output" value="json" id="jsonoutput" disabled="disabled" />
         <input type="hidden" name="stylesheet" value="" id="stylesheet" disabled="disabled" />
         <input type="hidden" name="graph" value="" id="graph-uri" disabled="disabled" />
+        <input type="hidden" name="kboption" value="" id="kboption" value="ontologies" />
         {% csrf_token %}
       </form>
       <div>
@@ -82,13 +105,14 @@ store.</div>
 PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>
 
 SELECT ?ont ?name ?acr
-WHERE { 
+WHERE {
 	?ont a omv:Ontology .
 	?ont omv:acronym ?acr .
-	?ont omv:name ?name . 
+	?ont omv:name ?name .
 }
         </textarea>
       </div>
+      <form id="frontEndForm">
       <div style="margin: 15px 0px 0px 0px">
         Results:
         <select id="selectoutput" onchange="snorql.updateOutputMode()">
@@ -98,7 +122,12 @@ WHERE {
         </select>
         <input id="query" type="button" value="run query" onclick="snorql.submitQuery()" />
         <input id="reset" type="button" value="reset" onclick="snorql.resetQuery()" />
-      </div>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <span style="border-bottom: thin dotted green; cursor: help;" title="Ontologies and mappings reside in separate databases. This option is to setup the target of the query. For SPARQL queries that need joins from both databases see SPARQL federation section in our documentation.">Database:</span>
+        &nbsp;&nbsp;<input type="radio" id="database" name="database" value="ontologies"  onclick="ontologiesSampleQuery()" checked> ontologies&nbsp;&nbsp;
+        <input type="radio" id="database" name="database" value="mappings" onclick="mappingSampleQuery()"> mappings
+    </div>
+</form>
       </div>
     </div>
 </div>

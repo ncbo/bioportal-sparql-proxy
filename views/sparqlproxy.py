@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 def get_parameter(request,key):
 	parameters = request.GET if request.method == 'GET' else request.POST
 	return parameters[key] if key in parameters else None
-	
-def main(request): 
+
+def main(request):
     c = {}
     c.update(csrf(request))
     return render_to_response("main.html",c)
@@ -39,11 +39,13 @@ def is_web_frontend(query):
             return True
     except Exception, e:
         pass
-    return False 
+    return False
 
 def proxy(request,query, url):
     http_client = httpclient.new_http_client()
     if request.method == "GET":
+        database = query["kboption"] if "kboption" in query else None
+        print "kboption", database
         ui = is_web_frontend(query)
         params = dict([(k,query[k]) for k in query])
         if ui:
@@ -56,7 +58,7 @@ def proxy(request,query, url):
                     headers["Accept"]="text/plain"
         header_resp,\
         code_resp,\
-        content_resp = http_client.get(PROXIED_SERVER, params, headers)
+        content_resp = http_client.get(PROXIED_SERVER(database), params, headers)
         content_type = header_resp["content-type"]\
                             if "content-type" in header_resp else None
         respd = HttpResponse(content_resp, mimetype=content_type)
@@ -81,7 +83,7 @@ def error_not_query_request():
     response.status_code = 500
     response.write(msg)
     logger.info(msg)
-    return response  
+    return response
 
 def error_apikey_validation(user_api_key):
     response = HttpResponse()
@@ -91,11 +93,11 @@ def error_apikey_validation(user_api_key):
     response.write(msg)
     logger.info(msg)
     logger.exception(auth_err)
-    return response 
+    return response
 
 ####
 # we should try to stream out the response:
-# see: 
+# see:
 # http://stackoverflow.com/questions/2922874/how-to-stream-an-httpresponse-with-django
 ####
 @condition(etag_func=None)

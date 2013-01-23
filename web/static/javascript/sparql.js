@@ -27,15 +27,15 @@
 /**
  * Example client interactions
  *
- 
+
  	var sparqler = new SPARQL.Service("http://sparql.org/sparql");
 	sparqler.addDefaultGraph("http://thefigtrees.net/lee/ldf-card"); // inherited by all (future) queries
 	sparqler.addNamedGraph("http://torrez.us/elias/foaf.rdf");
 	sparqler.setPrefix("foaf", "http://xmlns.com/foaf/0.1/"); // inherited by all (future) queries
 	sparqler.setPrefix("rdf", "http://xmlns.com/foaf/0.1/");
-	
+
 	sparqler.setRequestHeader("Authentication", "Basic: " + basicAuthString);
-	
+
 	//sparqler.wantOutputAs("application/json"); // for now we only do JSON
 
 	var query = sparqler.createQuery();
@@ -52,23 +52,23 @@
 	// passes boolean value to success callback
 	query.ask("ASK ?person WHERE { ?person foaf:knows [ foaf:name "Dan Connolly" ] }",
 		{failure: onFailure, success: function(bool) { if (bool) ... }}
-	); 
+	);
 
 	// passes a single vector (array) of values representing a single column of results to success callback
 	query.setPrefix("ldf", "http://thefigtrees.net/lee/ldf-card#");
 	var addresses = query.selectValues("SELECT ?mbox WHERE { _:someone foaf:mbox ?mbox }",
 		{failure: onFailure, success: function(values) { for (var i = 0; i < values.length; i++) { ... values[i] ...} } }
-	); 
+	);
 
 	// passes a single value representing a single row of a single column (variable) to success callback
 	query.setPrefix("ldf", "http://thefigtrees.net/lee/ldf-card#");
 	var myAddress = query.selectSingleValue("SELECT ?mbox WHERE {ldf:LDF foaf:mbox ?mbox }",
 		{failure: onFailure, success: function(value) { alert("value is: " + value); } }
-	); 
-	
+	);
+
 	// shortcuts for all of the above (w/o ability to set any query-specific graphs or prefixes)
 	sparqler.query(...) sparqler.ask(...) sparqler.selectValues(...) sparqler.selectSingleValue(...)
- 
+
 
  */
 
@@ -132,7 +132,7 @@ SPARQL.statistics = {
 	failures     : 0
 };
 
-// A SPARQL service represents a single endpoint which implements the HTTP (GET or POST) 
+// A SPARQL service represents a single endpoint which implements the HTTP (GET or POST)
 // bindings of the SPARQL Protocol. It provides convenience methods to set dataset and
 // prefix options for all queries created for this endpoint.
 SPARQL.Service = function(endpoint) {
@@ -144,6 +144,7 @@ SPARQL.Service = function(endpoint) {
 	var _prefix_map = {};
     var _method = 'GET';
 	var _output = 'json';
+	var _database = '';
 	var _max_simultaneous = 0;
 	var _request_headers = {};
 
@@ -155,9 +156,10 @@ SPARQL.Service = function(endpoint) {
 	this.prefixes = function() { return _prefix_map; };
     this.method = function() { return _method; };
     this.output = function() { return _output; };
+    this.database = function() { return _database; };
 	this.maxSimultaneousQueries = function() { return _max_simultaneous; };
 	this.requestHeaders = function() { return _request_headers; };
-	
+
 	//---------
 	// mutators
 	function _add_graphs(toAdd, arr) {
@@ -175,17 +177,18 @@ SPARQL.Service = function(endpoint) {
         _method = m;
     };
 	this.setOutput = function(o) { _output = o; };
+	this.setDatabase = function(o) { _database = o; };
 	this.setMaxSimultaneousQueries = function(m) { _max_simultaneous = m; };
 	this.setRequestHeader = function(h, v) { _request_headers[h] = v; };
-	
+
 	//---------------
 	// protected methods (should only be called within this module
 	this._active_queries = 0;
 	this._queued_queries = [];
 	this._next_in_queue  = 0;
 	this._canRun = function() { return this.maxSimultaneousQueries() <= 0 || this._active_queries < this.maxSimultaneousQueries();};
-	this._queue  = function(q,f, p) { 
-		if (!p) p = 0; 
+	this._queue  = function(q,f, p) {
+		if (!p) p = 0;
 		if (p > 0) {
 			for (var i = 0; i < this._queued_queries.length; i++) {
 				if (this._queued_queries[i] != null && this._queued_queries[i][2] < p) {
@@ -194,11 +197,11 @@ SPARQL.Service = function(endpoint) {
 				}
 			}
 		}
-		this._queued_queries.push([q,f,p]); 
+		this._queued_queries.push([q,f,p]);
 	};
 	this._markRunning = function(q) { this._active_queries++; };
-	this._markDone    = function(q) { 
-		this._active_queries--; 
+	this._markDone    = function(q) {
+		this._active_queries--;
 		//document.getElementById('log').innerHTML+="query done. " + this._active_queries + " queries still active.<br>";
 		if (this._queued_queries[this._next_in_queue] != null && this._canRun()) {
 			var a = this._queued_queries[this._next_in_queue];
@@ -212,7 +215,7 @@ SPARQL.Service = function(endpoint) {
 	//---------------
 	// public methods
 
-	// use our varied transformations to create the various shortcut methods of actually 
+	// use our varied transformations to create the various shortcut methods of actually
 	// issuing queries without explicitly creating a query object
 	for (var query_form in SPARQL._query_transformations) {
 		// need the extra function to properly scope query_form (qf)
@@ -223,13 +226,13 @@ SPARQL.Service = function(endpoint) {
 			};
 		})(query_form);
 	}
-	
+
 	//------------
 	// constructor
-    
+
 	if (!_endpoint)
 		return null;
-	
+
 	return this;
 }
 
@@ -250,17 +253,18 @@ SPARQL.Query = function(service, priority) {
 	var _user_query = ''; // doesn't include auto-generated prefix declarations
     var _method = service.method();
 	var _output = service.output();
+	var _database = service.database();
 	var _priority = priority || 0;
 	var _request_headers = clone_obj(service.requestHeaders());
 
 	//------------------
 	// private functions
-	function _create_json(text) { 
+	function _create_json(text) {
 		if (!text)
 			return null;
 		// make sure this is safe JSON
 		// see: http://www.ietf.org/internet-drafts/draft-crockford-jsonorg-json-03.txt
-		
+
 		// (1) strip out quoted strings
 		var no_strings = text.replace(/"(\\.|[^"\\])*"/g, '');
 		// (2) make sure that all the characters are explicitly part of the JSON grammar
@@ -275,12 +279,12 @@ SPARQL.Query = function(service, priority) {
 				return null;
 			}
 		}
-		return null; 
-	}	
-	
-	function clone_obj(o) { 
-		var o2 = o instanceof Array ? [] : {}; 
-		for(var x in o) {o2[x] = o[x];} 
+		return null;
+	}
+
+	function clone_obj(o) {
+		var o2 = o instanceof Array ? [] : {};
+		for(var x in o) {o2[x] = o[x];}
 		return o2;
 	}
 
@@ -292,12 +296,12 @@ SPARQL.Query = function(service, priority) {
 		if (which in cb) {
 			if (cb.scope) {
                 cb[which].apply(cb.scope, [arg, user_data]);
-			} else { 
-				cb[which](arg, user_data); 
+			} else {
+				cb[which](arg, user_data);
 			}
 		}
 	}
-	
+
 	this._queryFailure = function(xhr, arg) {
 		SPARQL.statistics.failures++;
 		_service._markDone(this);
@@ -310,19 +314,19 @@ SPARQL.Query = function(service, priority) {
 			_output == 'json' ? _create_json(xhr.responseText) : xhr.responseText
 		));
 	};
-	
+
 	function getXmlHttpRequest(url) {
 		// right now, this only does Firefox (Opera? Safari?)
 		return new XMLHttpRequest();
 	}
-	
+
 	this._doQuery = function(queryString, csrf, callback, transformer) {
 		_user_query = queryString;
 		if (_service._canRun()) {
 			try {
 				if (_method != 'POST' && _method != 'GET')
 					throw("HTTP methods other than GET and POST are not supported.");
-			
+
 				var url = _method == 'GET' ? (this.queryUrl()+"&csrfmiddlewaretoken="+csrf) : this.service().endpoint();
 				var xhr = getXmlHttpRequest(url);
 				var content = null;
@@ -330,7 +334,7 @@ SPARQL.Query = function(service, priority) {
 				try {
                     if (!document.domain || ((url.match(/^http:\/\//) && url.slice(7, document.domain.length + 7) != document.domain || url.match(/^https:\/\//) && url.slice(8, document.domain.length + 8) != document.domain) && window.netscape && netscape.security && netscape.security.PrivilegeManager)) {
 						netscape.security.PrivilegeManager.enablePrivilege( "UniversalBrowserRead");
-						netscape.security.PrivilegeManager.enablePrivilege( "UniversalXPConnect"); 
+						netscape.security.PrivilegeManager.enablePrivilege( "UniversalXPConnect");
 					}
 				} catch(e) {
 					alert("Cross-site requests prohibited. You will only be able to SPARQL the origin site: " + e);
@@ -338,7 +342,7 @@ SPARQL.Query = function(service, priority) {
 				}
 
 				xhr.open(_method, url, true /* async */);
-				
+
 				// set the headers, including the content-type for POSTed queries
 				for (var header in this.requestHeaders())
                     if (typeof(this.requestHeaders()[header]) != "function")
@@ -349,19 +353,19 @@ SPARQL.Query = function(service, priority) {
 				}
 				SPARQL.statistics.queries_sent++;
 				_service._markRunning(this);
-	
+
 				var callbackData = {
-					scope: this, 
-					success: this._querySuccess, 
+					scope: this,
+					success: this._querySuccess,
 					failure: this._queryFailure,
 					argument: {
 						transformer: transformer,
 						callback: callback
 					}
 				};
-				
+
 				// I've seen some strange race-condition behavior (strange since normally
-				// JS is single-threaded, so synchronization conditions don't occur barring 
+				// JS is single-threaded, so synchronization conditions don't occur barring
 				// reentrancy) with onreadystatechange. Instead, we poll asynchronously to
 				// determine when the request is done.
 				var token = window.setInterval(
@@ -379,8 +383,8 @@ SPARQL.Query = function(service, priority) {
 						}
 					},
 					200 /* maybe this should be customizable */
-				);			
-	
+				);
+
 				xhr.send(content);
 			} catch (e) {
 				alert("Error sending SPARQL query: " + e);
@@ -391,7 +395,7 @@ SPARQL.Query = function(service, priority) {
 		}
 	};
 
-	
+
 	//----------
 	// accessors
 	this.request = function() { return _conn; };
@@ -418,34 +422,35 @@ SPARQL.Query = function(service, priority) {
 		}
 		return preamble + _user_query;
 	};
-	
+
     /**
      * Returns the HTTP query parameters to invoke this query. This includes entries for
-     * all of the default graphs, the named graphs, the SPARQL query itself, and an 
+     * all of the default graphs, the named graphs, the SPARQL query itself, and an
      * output parameter to specify JSON (or other) output is desired.
      */
 	this.queryParameters = function () {
 		var urlQueryString = '';
 		var i;
-		
+
 		// add default and named graphs to the protocol invocation
 		for (i = 0; i < this.defaultGraphs().length; i++) urlQueryString += 'default-graph-uri=' + encodeURIComponent(this.defaultGraphs()[i]) + '&';
 		for (i = 0; i < this.namedGraphs().length; i++) urlQueryString += 'named-graph-uri=' + encodeURIComponent(this.namedGraphs()[i]) + '&';
-		
+
 		// specify JSON output (currently output= supported by latest Joseki) (or other output)
 		urlQueryString += 'output=' + _output + '&';
+		urlQueryString += 'kboption=' + _database + '&';
 		return urlQueryString + 'query=' + encodeURIComponent(this.queryString());
 	}
-	
+
     /**
-     * Returns the HTTP GET URL to invoke this query. (Note that this returns a full HTTP GET URL 
+     * Returns the HTTP GET URL to invoke this query. (Note that this returns a full HTTP GET URL
      * even if this query is set to actually use POST.)
      */
 	this.queryUrl = function() {
 		var url = this.service().endpoint() + '?';
 		return url + this.queryParameters();
 	};
-	
+
 	//---------
 	// mutators
 	function _add_graphs(toAdd, arr) {
@@ -462,11 +467,11 @@ SPARQL.Query = function(service, priority) {
         _method = m;
     };
 	this.setRequestHeader = function(h, v) { _request_headers[h] = v; };
-	
+
 	//---------------
 	// public methods
 
-	// use our varied transformations to create the various methods of actually issuing 
+	// use our varied transformations to create the various methods of actually issuing
 	// queries
 	for (var query_form in SPARQL._query_transformations) {
 		// need the extra function to properly scope query_form (qf)
@@ -476,11 +481,11 @@ SPARQL.Query = function(service, priority) {
 			};
 		})(query_form);
 	}
-	
+
 
 	//------------
 	// constructor
-	
+
 	return this;
 }
 

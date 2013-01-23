@@ -50,6 +50,15 @@ function Snorql() {
             token = queryString.match(/csrfmiddlewaretoken=([^&]*)/)[1];
             csrf_global = token;
         }
+        if (queryString.match(/kboption=/)) {
+            kboption = queryString.match(/kboption=([^&]*)/)[1];
+            for (var i=0; i < document.forms.frontEndForm.database.length; i++) {
+               if (kboption == document.forms.frontEndForm.database[i].value) {
+                   document.forms.frontEndForm.database[i].checked = true;
+                   document.getElementById('kboption').value = kboption;
+               }
+            }
+        }
         if ((!queryString || !queryString.match(/browse=([^&]*)/)) && (!queryString.match(/query=/) && !queryString.match(/describe=/) && !queryString.match(/property=/))) {
                     var query = 'PREFIX omv: <http://omv.ontoware.org/2005/05/ontology#>\n\nSELECT ?ont ?name ?acr\n' +
                     'WHERE { \n\t?ont a omv:Ontology .\n\t?ont omv:acronym ?acr .\n\t?ont omv:name ?name . \n}\n';
@@ -78,7 +87,7 @@ function Snorql() {
         }
         if (browse && browse[1] == 'properties') {
             var resultTitle = 'List of all properties:';
-            var query = 'SELECT DISTINCT ?property ' + 
+            var query = 'SELECT DISTINCT ?property ' +
                     'WHERE { [] ?property [] }\n' +
                     'ORDER BY ?property';
         }
@@ -136,9 +145,15 @@ var query = 'SELECT ?category ?name (count(?ontology) as ?counter) WHERE {'+
 
         // AndyL changed MIME type and success callback depending on query form...
         var dummy = this;
-        
+
    	    var exp = /^\s*(?:PREFIX\s+\w*:\s+<[^>]*>\s*)*(\w+)\s*.*/i;
    	    var match = exp.exec(querytext);
+        for (var i=0; i < document.forms.frontEndForm.database.length; i++) {
+           if (document.forms.frontEndForm.database[i].checked) {
+               service.setDatabase(document.forms.frontEndForm.database[i].value);
+           }
+        }
+
    	    if (match) {
 	        if (match[1].toUpperCase() == 'ASK') {
 	        	service.setOutput('boolean');
@@ -273,6 +288,11 @@ var query = 'SELECT ?category ?name (count(?ontology) as ?counter) WHERE {'+
         if (mode == 'xslt') {
             document.getElementById('stylesheet').value = document.getElementById('xsltstylesheet').value;
         }
+        for (var i=0; i < document.forms.frontEndForm.database.length; i++) {
+           if (document.forms.frontEndForm.database[i].checked) {
+               document.getElementById('kboption').value = document.forms.frontEndForm.database[i].value;
+           }
+        }
         document.getElementById('queryform').submit();
     }
 
@@ -301,7 +321,7 @@ var query = 'SELECT ?category ?name (count(?ontology) as ?counter) WHERE {'+
         this._display(div, 'result');
         this._updateGraph(this._graph); // refresh links in new result
     }
-    
+
     this.displayRDFResult = function(model, resultTitle) {
         var div = document.createElement('div');
         //var title = document.createElement('h2');
@@ -311,7 +331,7 @@ var query = 'SELECT ?category ?name (count(?ontology) as ?counter) WHERE {'+
         this._display(div, 'result');
         this._updateGraph(this._graph); // refresh links in new result - necessary for boolean?
     }
-    
+
     this.displayJSONResult = function(json, resultTitle) {
         var div = document.createElement('div');
         //var title = document.createElement('h2');
@@ -363,7 +383,7 @@ var query = 'SELECT ?category ?name (count(?ontology) as ?counter) WHERE {'+
 
 /*
  * RDFXMLFormatter
- * 
+ *
  * maybe improve...
  */
 function RDFXMLFormatter(string) {

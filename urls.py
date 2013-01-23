@@ -10,8 +10,10 @@ urlpatterns = patterns (
         'views.sparqlproxy',
         (r'^/?$', 'main'),
         (r'^sparql/?$', 'sparql_auth'),
+        (r'^sparql/ontologies/?$', 'sparql_auth'),
+        (r'^sparql/mappings/?$', 'sparql_auth'),
         (r'^examples/?$', 'examples'),
         (r'^apikeys/?$', 'apikeys'),
 )
-        
+
 
