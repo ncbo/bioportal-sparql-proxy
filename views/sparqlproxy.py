@@ -45,7 +45,10 @@ def proxy(request,query, url):
     http_client = httpclient.new_http_client()
     if request.method == "GET":
         database = query["kboption"] if "kboption" in query else None
-        print "kboption", database
+        path_info = request.path
+        if not database:
+            if path_info:
+                database = "mappings" if "mappings" in path_info else None
         ui = is_web_frontend(query)
         params = dict([(k,query[k]) for k in query])
         if ui:
