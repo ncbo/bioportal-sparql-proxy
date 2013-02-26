@@ -59,6 +59,11 @@ def proxy(request,query, url):
            if ui and ("describe" in query["query"].lower() or\
                 "construct" in query["query"].lower()):
                     headers["Accept"]="text/plain"
+        outputformat = None
+        if "outputformat" in query:
+            outputformat = query["outputformat"]
+            if  query["outputformat"]=="json":
+                headers["Accept"]="application/sparql-results+json"
         header_resp,\
         code_resp,\
         content_resp = http_client.get(PROXIED_SERVER(database), params, headers)
@@ -66,6 +71,8 @@ def proxy(request,query, url):
                             if "content-type" in header_resp else None
         respd = HttpResponse(content_resp, mimetype=content_type)
         respd['Access-Control-Allow-Origin'] = "*"
+        if outputformat:
+            respd['Content-Disposition'] = 'inline; filename="bioportal_sparql_results.%s"'%outputformat
         respd.status_code = code_resp
         return respd
     elif request.method == "POST":

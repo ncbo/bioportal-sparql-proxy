@@ -283,11 +283,7 @@ var query = 'SELECT ?category ?name (count(?ontology) as ?counter) WHERE {'+
             document.getElementById('query').value = this._getPrefixes() +  getEditor().getValue();
             document.getElementById('queryform').action = this._endpoint;
         }
-        document.getElementById('jsonoutput').disabled = (mode != 'json');
-        document.getElementById('stylesheet').disabled = (mode != 'xslt' || !document.getElementById('xsltstylesheet').value);
-        if (mode == 'xslt') {
-            document.getElementById('stylesheet').value = document.getElementById('xsltstylesheet').value;
-        }
+        document.getElementById('outputformat').value = mode;
         for (var i=0; i < document.forms.frontEndForm.database.length; i++) {
            if (document.forms.frontEndForm.database[i].checked) {
                document.getElementById('kboption').value = document.forms.frontEndForm.database[i].value;
