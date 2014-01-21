@@ -95,10 +95,10 @@ def error_not_query_request():
     logger.info(msg)
     return response
 
-def error_apikey_validation(user_api_key):
+def error_apikey_validation(user_api_key,auth_err=""):
     response = HttpResponse()
-    msg = "403 FORBIDEN apikey [%s] not valid. Trace 1."%\
-          user_api_key
+    msg = "403 FORBIDEN apikey [%s] not valid. Trace 1. %s"%\
+          (user_api_key,auth_err)
     response.status_code = 403
     response.write(msg)
     logger.info(msg)
@@ -135,8 +135,14 @@ def sparql_auth(request):
                 query["soft-limit"]=-1
             services = Services(user_api_key)
             try:
-                user_id = services.validate_api_key()
-                query["apikey"]=user_id
+                bool_auth = services.validate_api_key()
+                if bool_auth =="OK":
+                    #TODO: private access to graphs disable until
+                    # until new backend RDF is rolled out
+                    user_id = "9876500"
+                    query["apikey"]=user_id
+                else:
+                    return error_apikey_validation(user_api_key,"")
             except HTTPError, auth_err:
                 if auth_err.getcode() == 403:
                     return error_apikey_validation(user_api_key,auth_err)
