@@ -8,10 +8,13 @@ import urllib,urllib2
 import json, xml2json
 import email_sender
 from config import REST_URL, API_KEY_AUTH
+
+logger = logging.getLogger(__name__)
     
 def http_request(service,params,api_key):
     try:
-        params["apikey"]=api_key
+        if api_key:
+          params["apikey"]=api_key
         params = urllib.urlencode(params)
         opener = urllib2.build_opener(urllib2.HTTPHandler)
         request = urllib2.Request(service+'?'+params)
@@ -22,7 +25,17 @@ def http_request(service,params,api_key):
         raise e
 
 def auth_call(rest_url,user_api_key):
-   return xml2json.xml2json(http_request(rest_url+"auth",dict(userapikey=user_api_key),API_KEY_AUTH))
+   try:
+     http_request(rest_url+"groups",dict(apikey=user_api_key),None)
+     return "OK"
+   except urllib2.HTTPError, e:
+     if e.code == 401:
+       return "KO"
+     #log out other types of errors
+     logger.exception("Unable to validate api key\n%s"%(userapikey))
+     return "KO"
+
+   #return xml2json.xml2json(http_request(rest_url+"auth",dict(userapikey=user_api_key),API_KEY_AUTH))
 
 def parse_xml_ontologies(xml_content):
     in_bean = [False]
@@ -78,12 +91,16 @@ class BioportalAPIClient:
             cache_key = filter(lambda x: x.isalnum(),user_api_key)
             res = self.cache.get(cache_key)
             if res:
+                if res == "OK" or res == "KO":
+                  return res
                 return json.loads(res)
 
         res = auth_call(self.rest_url,user_api_key)
 
         if self.cache:
             self.cache.set(cache_key, res,2 * 60 * 60)
+        if res == "OK" or res == "KO":
+          return res
         return json.loads(res)
 
     def load_all_ontologies_info(self,load_acl=False):

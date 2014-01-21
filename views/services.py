@@ -26,11 +26,7 @@ class Services:
 
     def validate_api_key(self):
         resp = bioportalAPI.user_auth(self.user_api_key)
-        try:
-            user_id = resp["success"]["data"]["session"]["attributes"]["entry"]["securityContext"]["userBean"]["id"]
-            return int(user_id)
-        except Exception, e:
-            raise e
+        return resp
     
     def get_private_ontologies(self,force_reload=False):
         if CACHE_DJANGO and not force_reload:
