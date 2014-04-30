@@ -2,8 +2,8 @@ SPARQL_SERVER = "INTERNAL SPARQL CLUSTER EPR"
 REST_URL = "http://data.bioontology.org/"
 
 #USER bioportal_sparql
-USER_ID = ""
-API_KEY_AUTH = ""
+USER_ID = "SOME INTERNAL ID"
+API_KEY_AUTH = "SOME API KEY"
 
 PROXY_DOMAIN = "ncboprod-fsmaster1"
 KB_ONTOLOGIES = "8080"
