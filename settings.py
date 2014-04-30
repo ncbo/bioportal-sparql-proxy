@@ -165,13 +165,13 @@ LOGGING = {
             'class':'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'fileout':{
-            'level':'DEBUG',
-            'class':'logging.FileHandler',
-            'filename': os.path.join(SITE_ROOT,'sparql.log'),
-            'mode': 'w',
-            'formatter': 'simple'
-        },
+#        'fileout':{
+#            'level':'DEBUG',
+#            'class':'logging.FileHandler',
+#            'filename': os.path.join(SITE_ROOT,'sparql.log'),
+#            'mode': 'w',
+#            'formatter': 'simple'
+#        },
      },
     'loggers': {
         'django.request': {

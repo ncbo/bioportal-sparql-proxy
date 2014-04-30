@@ -2,10 +2,10 @@ SPARQL_SERVER = "INTERNAL SPARQL CLUSTER EPR"
 REST_URL = "http://data.bioontology.org/"
 
 #USER bioportal_sparql
-USER_ID = "SOME INTERNAL ID" # we handle ids "59cca101-3334-4aac-b45d-9668125b9893" #user bioportal_sparql
-API_KEY_AUTH = "SOME API KEY"
+USER_ID = ""
+API_KEY_AUTH = ""
 
-PROXY_DOMAIN = "ncbostage-fsmaster1"
+PROXY_DOMAIN = "ncboprod-fsmaster1"
 KB_ONTOLOGIES = "8080"
 KB_MAPPINGS = "8083"
 def PROXIED_SERVER(kb=None):

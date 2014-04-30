@@ -128,27 +128,12 @@ def sparql_auth(request):
 
         if not is_web_frontend(query):
             user_api_key = get_parameter(request,"apikey")
-            if not user_api_key:
+            if not user_api_key and len(user_api_key) < 6:
                 return error_api_key()
             by_pass = user_api_key in BY_PASS_KEYS
             if by_pass:
                 query["soft-limit"]=-1
-            services = Services(user_api_key)
-            try:
-                bool_auth = services.validate_api_key()
-                if bool_auth =="OK":
-                    #TODO: private access to graphs disable until
-                    # until new backend RDF is rolled out
-                    user_id = "9876500"
-                    query["apikey"]=user_id
-                else:
-                    return error_apikey_validation(user_api_key,"")
-            except HTTPError, auth_err:
-                if auth_err.getcode() == 403:
-                    return error_apikey_validation(user_api_key,auth_err)
-                raise auth_err
-            except Exception, auth_err:
-                return error_apikey_validation(user_api_key,auth_err)
+            #TODO: apikey validation is disable
 
         response = proxy(request,query, "sparql/")
         return response
